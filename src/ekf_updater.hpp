@@ -8,7 +8,7 @@ class EKFUpdater {
  public:
   /**
    * Constructor
-   * @param H Measurement function
+   * @param Inovation Inovation measurement function, usually Inovation(z,x) = z - h(x), where h( ) is the measurement function
    * @param J Jacobian of the measurement function
    * @param R Measurement covariance matrix function
    */
@@ -22,10 +22,10 @@ class EKFUpdater {
   State<X> Update(const Eigen::Matrix<double,Y,1> &z, const State<X>& x);
 
   private:
-  // measurement matrix function
+  // Inovation measurement function
   InovationFunction<Y, X> Inovation_;
 
-  // measurement matrix function
+  // Jacobian of the measurement function
   JacobianMap<Y, X> J_;
 
   // measurement covariance matrix function

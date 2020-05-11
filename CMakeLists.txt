@@ -7,7 +7,7 @@ add_definitions(-std=c++17)
 set(CXX_FLAGS "-Wall")
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
-set(sources src/main.cpp src/tools.cpp src/FusionEKF.cpp src/ekf_updater.cpp src/process_predictor.cpp src/tools.h src/ekf_updater.hpp src/process_predictor.hpp src/state.hpp)
+set(sources src/main.cpp src/tools.cpp src/FusionEKF.cpp src/tools.h src/ekf_updater.hpp src/process_predictor.hpp src/state.hpp)
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 

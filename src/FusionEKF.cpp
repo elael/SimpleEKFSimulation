@@ -25,14 +25,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Initialization
    */
   if (!is_initialized_) {
-    /**
-     * TODO: Initialize the state ekf_.x_ with the first measurement.
-     * TODO: Create the covariance matrix.
-     * You'll need to convert radar from polar to cartesian coordinates.
-     */
 
-    // first measurement
-    cout << "EKF: " << endl;
     state.cov = Eigen::Matrix4d::Random().cwiseAbs() * 1e-3; // add some uncertanties
     state.cov *= state.cov.transpose(); // cov are symmetrical
     state.cov.block<2,2>(2,2) += Eigen::Matrix2d::Identity() * 1e5; // add velocity uncertanty
@@ -77,8 +70,5 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     state = radar_filter.Update(Eigen::Ref<const Eigen::Vector3d>(measurement_pack.raw_measurements_), state);
   else 
     state = laser_filter.Update(Eigen::Ref<const Eigen::Vector2d>(measurement_pack.raw_measurements_), state);
-
-  // print the output
-  cout << "x mean = \n" << state.mean;
-  cout << "\nP covariance = \n" <<  state.cov << endl;
+    
 }

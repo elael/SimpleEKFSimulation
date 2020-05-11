@@ -14,6 +14,7 @@ using JacobianMap = std::function<const Eigen::Matrix<double, N, M> (const Eigen
 template <int N, int M>
 using VectorMap = std::function<Eigen::Matrix<double, N, 1> (const Eigen::Matrix<double, M, 1>&)>;
 
+// Simple N dimensional state
 template<int N>
 struct State
 {
