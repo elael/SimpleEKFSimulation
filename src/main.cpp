@@ -6,7 +6,9 @@
 #include "tools.h"
 
 using Eigen::MatrixXd;
-using Eigen::VectorXd;
+using Eigen::Vector4d;
+using Eigen::Vector3d;
+using Eigen::Vector2d;
 using std::string;
 using std::vector;
 
@@ -37,8 +39,8 @@ int main() {
 
   // used to compute the RMSE later
   Tools tools;
-  vector<VectorXd> estimations;
-  vector<VectorXd> ground_truth;
+  vector<Vector4d> estimations;
+  vector<Vector4d> ground_truth;
 
   h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
@@ -69,7 +71,7 @@ int main() {
 
           if (sensor_type.compare("L") == 0) {
             meas_package.sensor_type_ = MeasurementPackage::LASER;
-            meas_package.raw_measurements_ = VectorXd(2);
+            meas_package.raw_measurements_ = Vector2d();
             float px;
             float py;
             iss >> px;
@@ -79,7 +81,7 @@ int main() {
             meas_package.timestamp_ = timestamp;
           } else if (sensor_type.compare("R") == 0) {
             meas_package.sensor_type_ = MeasurementPackage::RADAR;
-            meas_package.raw_measurements_ = VectorXd(3);
+            meas_package.raw_measurements_ = Vector3d();
             float ro;
             float theta;
             float ro_dot;
@@ -100,11 +102,8 @@ int main() {
           iss >> vx_gt;
           iss >> vy_gt;
 
-          VectorXd gt_values(4);
-          gt_values(0) = x_gt;
-          gt_values(1) = y_gt; 
-          gt_values(2) = vx_gt;
-          gt_values(3) = vy_gt;
+          Vector4d gt_values;
+          gt_values << x_gt, y_gt, vx_gt, vy_gt;
           ground_truth.push_back(gt_values);
           
           // Call ProcessMeasurement(meas_package) for Kalman filter
@@ -113,21 +112,18 @@ int main() {
           // Push the current estimated x,y positon from the Kalman filter's 
           //   state vector
 
-          VectorXd estimate(4);
+          Vector4d estimate;
 
-          double p_x = fusionEKF.ekf_.x_(0);
-          double p_y = fusionEKF.ekf_.x_(1);
-          double v1  = fusionEKF.ekf_.x_(2);
-          double v2 = fusionEKF.ekf_.x_(3);
+          double p_x = fusionEKF.state.mean(0);
+          double p_y = fusionEKF.state.mean(1);
+          double v1  = fusionEKF.state.mean(2);
+          double v2 = fusionEKF.state.mean(3);
 
-          estimate(0) = p_x;
-          estimate(1) = p_y;
-          estimate(2) = v1;
-          estimate(3) = v2;
+          estimate << p_x, p_y, v1, v2;
         
           estimations.push_back(estimate);
 
-          VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
+          Vector4d RMSE = tools.CalculateRMSE(estimations, ground_truth);
 
           json msgJson;
           msgJson["estimate_x"] = p_x;
