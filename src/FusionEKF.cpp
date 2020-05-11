@@ -33,9 +33,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // first measurement
     cout << "EKF: " << endl;
-
-    state.cov = Eigen::Matrix4d::Identity();//Random().cwiseAbs() * 1e-3; // add some uncertanties
-    // state.cov.block<2,2>(2,2) += Eigen::Matrix2d::Identity() * 1e5; // add velocity uncertanty
+    state.cov = Eigen::Matrix4d::Random().cwiseAbs() * 1e-3; // add some uncertanties
+    state.cov *= state.cov.transpose(); // cov are symmetrical
+    state.cov.block<2,2>(2,2) += Eigen::Matrix2d::Identity() * 1e5; // add velocity uncertanty
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // Convert radar from polar to cartesian coordinates 
