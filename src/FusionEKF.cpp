@@ -13,9 +13,9 @@ using std::endl;
 using std::vector;
 
 FusionEKF::FusionEKF(): 
-    process(F, Q), 
-    laser_filter(Inovation_laser, J_laser, R_laser), 
-    radar_filter(Inovation_radar, J_radar, R_radar),
+    process(Car::F, Car::Q), 
+    laser_filter(Laser::Inovation, Laser::J, Laser::R), 
+    radar_filter(Radar::Inovation, Radar::J, Radar::R),
     is_initialized_(false)
 {
 }
@@ -40,11 +40,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       J << std::cos(theta), - rho * std::sin(theta),
            std::sin(theta),   rho * std::cos(theta);
 
-      state.cov.block<2,2>(0,0) += J * R_radar.block<2,2>(0,0) * J.transpose();
+      state.cov.block<2,2>(0,0) += J * Radar::R.block<2,2>(0,0) * J.transpose();
     }
     else{
       state.mean << measurement_pack.raw_measurements_, 0, 0;
-      state.cov.block<2,2>(0,0) += R_laser;
+      state.cov.block<2,2>(0,0) += Laser::R;
     }
 
     // done initializing, no need to predict or update
@@ -70,5 +70,5 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     state = radar_filter.Update(Eigen::Ref<const Eigen::Vector3d>(measurement_pack.raw_measurements_), state);
   else 
     state = laser_filter.Update(Eigen::Ref<const Eigen::Vector2d>(measurement_pack.raw_measurements_), state);
-    
+
 }

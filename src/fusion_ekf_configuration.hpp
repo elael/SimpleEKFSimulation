@@ -1,11 +1,12 @@
 #include "Eigen/Dense"
 
+namespace Laser {
 /* 
  * Laser Configuration
  */
 
 // Measurement matrix
-static const auto H_laser_matrix = [](){
+const auto H_matrix = [](){
   Eigen::Matrix<double, 2, 4> tmp;
   tmp << 1, 0, 0, 0,
          0, 1, 0, 0;
@@ -13,28 +14,30 @@ static const auto H_laser_matrix = [](){
 }();
 
 // Inovation function from state and measurement
-static const auto Inovation_laser = [](const Eigen::Vector2d& z, const Eigen::Vector4d& x){
-  return z - H_laser_matrix*x;
+constexpr auto Inovation = [](const Eigen::Vector2d& z, const Eigen::Vector4d& x){
+  return z - H_matrix*x;
 };
 
 // Jacobian fuction of the measurement function
-static const auto J_laser = [](auto){
-  return H_laser_matrix;
+constexpr auto J = [](auto){
+  return H_matrix;
 };
 
 // Covariance matrix of the measurement noise
-static const auto R_laser = [](){
+const auto R = [](){
   Eigen::Matrix2d tmp;
   tmp << 0.0225, 0,
          0, 0.0225;
    return tmp;
 }();
+}
 
+namespace Radar {
 /* 
  * Radar Configuration
  */
 
-void normalize_rad(double& theta){
+constexpr void normalize_rad(double& theta){
   constexpr double pi = 3.14159265358979323846;
   if (std::abs(theta) <= pi) return;
   if (theta > pi)
@@ -46,7 +49,7 @@ void normalize_rad(double& theta){
 }
 
 // Inovation function from state and measurement
-static const auto Inovation_radar = [](const Eigen::Vector3d& z, const Eigen::Vector4d& x){
+constexpr auto Inovation = [](const Eigen::Vector3d& z, const Eigen::Vector4d& x){
   Eigen::Vector3d inovation;
   const double& px = x(0);
   const double& py = x(1);
@@ -61,7 +64,7 @@ static const auto Inovation_radar = [](const Eigen::Vector3d& z, const Eigen::Ve
 };
 
 // Jacobian fuction of the measurement function
-static const auto J_radar = [](const Eigen::Vector4d& x_state) -> Eigen::Matrix<double, 3, 4> {
+constexpr auto J = [](const Eigen::Vector4d& x_state) -> Eigen::Matrix<double, 3, 4> {
 
   Eigen::Matrix<double, 3, 4> Hj;
   // recover state parameters
@@ -80,7 +83,7 @@ static const auto J_radar = [](const Eigen::Vector4d& x_state) -> Eigen::Matrix<
     r2 = px*px + py*py;
   }
 
-  // If static return zero Jacobian
+  // If return zero Jacobian
   if(r2 < 1e-20)    
       return Eigen::Matrix<double, 3, 4>::Zero();  
   
@@ -104,7 +107,7 @@ static const auto J_radar = [](const Eigen::Vector4d& x_state) -> Eigen::Matrix<
 };
 
 // Covariance matrix of the measurement noise
-static const auto R_radar = [](){
+const auto R = [](){
   Eigen::Matrix3d tmp;
   tmp << 0.09, 0, 0,
          0, 0.0009, 0,
@@ -112,23 +115,25 @@ static const auto R_radar = [](){
    return tmp;
 }();
 
+}
 
+namespace Car {
 /* 
  * Process Configuration
  */
 
 // Transition Matrix function
-static const auto F = [](double dt){
-  static Eigen::Matrix4d tmp = Eigen::Matrix4d::Identity();
+constexpr auto F = [](double dt){
+  Eigen::Matrix4d tmp = Eigen::Matrix4d::Identity();
   tmp(0,2) = dt; 
   tmp(1,3) = dt;
   return tmp;
 };
 
 // Process Covariance function
-static const auto Q = [](double dt){
-  static const double noise_ax = 9;
-  static const double noise_ay = 9;
+constexpr auto Q = [](double dt){
+  const double noise_ax = 9;
+  const double noise_ay = 9;
   Eigen::Matrix4d tmp;
   float dt2 = dt*dt;
   float dt3 = dt2 * dt /2.0;
@@ -140,3 +145,4 @@ static const auto Q = [](double dt){
   return tmp;
 };
 
+}
